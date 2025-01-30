@@ -1,39 +1,47 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { useRouter, Stack } from "expo-router";
+import { useEffect } from "react";
+import { View, StatusBar } from "react-native";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import Header from "@/components/Header";
+import './global.css';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+function ProtectedLayout() {
+  const router = useRouter();
+  const { isLoggedIn } = useAuth();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (!isLoggedIn) {
+      router.replace("/login");
     }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
+  }, [isLoggedIn]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+    <View className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <StatusBar
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor={isDarkMode ? '#111827' : '#f9fafb'}
+      />
+      <Stack
+        screenOptions={{
+          header: (props) => <Header title={props.route.name} />,
+          contentStyle: {
+            backgroundColor: 'transparent',
+          },
+        }}
+      />
+    </View>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <ProtectedLayout />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
+
