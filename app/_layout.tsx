@@ -24,16 +24,17 @@ function LayoutContent() {
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
-          animation: 'slide_from_right', // or "fade" or "flip" or "none"
+          headerShown: false, // Hide header for all screens by default
+          animation: 'slide_from_right',
           contentStyle: {
             backgroundColor: isDarkMode ? '#111827' : '#f9fafb',
           },
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="post" options={{ headerShown: false }} />
-        <Stack.Screen name="profile" options={{ headerShown: false }} />
-        <Stack.Screen name="contact" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="post" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="contact" />
       </Stack>
       <Toast />
     </>

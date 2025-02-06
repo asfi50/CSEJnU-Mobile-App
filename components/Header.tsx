@@ -14,11 +14,11 @@ export default function Header({ title, showBack = false }: HeaderProps) {
   const router = useRouter();
 
   return (
-    <View className={`flex-row items-center px-4 pt-12 pb-3 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+    <View className={`flex-row items-center px-4 pt-12 pb-3 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {showBack && (
         <TouchableOpacity
           onPress={() => router.back()}
-          className="mr-4"
+          className="mr-2"
         >
           <Ionicons 
             name="arrow-back" 
@@ -27,8 +27,11 @@ export default function Header({ title, showBack = false }: HeaderProps) {
           />
         </TouchableOpacity>
       )}
-      <Text className={`text-lg font-semibold ml-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
-        {title || 'Dashboard'}
+      <Text 
+        numberOfLines={1} 
+        className={`text-lg font-semibold flex-1 ${isDarkMode ? 'text-white' : 'text-black'}`}
+      >
+        {title}
       </Text>
       
       <View className="flex-row items-center ml-auto">
