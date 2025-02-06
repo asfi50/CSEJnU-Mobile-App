@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, TouchableOpacity, Linking } from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Linking, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -77,18 +77,43 @@ export default function ContactDetail() {
       <View className="p-4">
         {/* Header with avatar */}
         <View className={`p-6 rounded-xl mb-4 items-center ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-3">
-            <Ionicons name="person" size={40} color="white" />
-          </View>
+          {contact.photo ? (
+            <Image 
+              source={{ uri: contact.photo }} 
+              className="w-20 h-20 rounded-full mb-3"
+            />
+          ) : (
+            <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-3">
+              <Text className="text-white text-3xl font-bold">
+                {contact.name.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
           <Text className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             {contact.name}
           </Text>
-          {contact.roles.um_student && (
-            <Text className={`mt-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>Student</Text>
-          )}
-          {contact.roles.um_teacher && (
-            <Text className={`mt-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>Teacher</Text>
-          )}
+          <View className="flex-row flex-wrap justify-center gap-2 mt-2">
+            {contact.roles.um_student && (
+              <Text className={`px-3 py-1 rounded-full text-sm ${isDarkMode ? 'bg-blue-900 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                Student
+              </Text>
+            )}
+            {contact.roles.um_teacher && (
+              <Text className={`px-3 py-1 rounded-full text-sm ${isDarkMode ? 'bg-green-900 text-green-400' : 'bg-green-100 text-green-600'}`}>
+                Teacher
+              </Text>
+            )}
+            {Array.isArray(contact.graduated) && contact.graduated.includes("Yes") && (
+              <Text className={`px-3 py-1 rounded-full text-sm ${isDarkMode ? 'bg-purple-900 text-purple-400' : 'bg-purple-100 text-purple-600'}`}>
+                Alumni
+              </Text>
+            )}
+            {Array.isArray(contact.cr) && contact.cr.includes("Yes") && (
+              <Text className={`px-3 py-1 rounded-full text-sm ${isDarkMode ? 'bg-amber-900 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
+                CR
+              </Text>
+            )}
+          </View>
         </View>
 
         {/* Contact Actions */}
@@ -109,38 +134,124 @@ export default function ContactDetail() {
 
         {/* Contact Details */}
         <View className={`p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          <View className="mb-4">
-            <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Phone</Text>
-            <Text className={`text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{contact.phone}</Text>
+          {/* Basic Info Section */}
+          <View className="mb-6">
+            <Text className={`text-lg font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Basic Information</Text>
+            <DetailItem label="Phone" value={contact.phone} />
+            <DetailItem label="Email" value={contact.email} />
+            <DetailItem label="Blood Type" value={contact.blood_type} />
+            <DetailItem label="Birthday" value={contact.birthday} />
+            <DetailItem label="Gender" value={contact.gender?.join(', ')} />
           </View>
-          <View className="mb-4">
-            <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Email</Text>
-            <Text className={`text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{contact.email}</Text>
+
+          {/* Academic Info Section */}
+          <View className="mb-6">
+            <Text className={`text-lg font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Academic Information</Text>
+            <DetailItem label="Student ID" value={contact.student_id} />
+            <DetailItem label="Batch" value={contact.batch} />
+            <DetailItem 
+              label="CR" 
+              value={Array.isArray(contact.cr) && contact.cr.includes("Yes") ? "Yes" : "No"} 
+            />
+            <DetailItem 
+              label="Graduated" 
+              value={Array.isArray(contact.graduated) && contact.graduated.includes("Yes") ? "Yes" : "No"} 
+            />
+            <DetailItem label="Job Description" value={contact.job_description} />
           </View>
-          <View className="mb-4">
-            <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Blood Type</Text>
-            <Text className={`text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{contact.blood_type}</Text>
+
+          {/* Social Links Section */}
+          <View>
+            <Text className={`text-lg font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Social Links</Text>
+            
+            {contact.linkedin && (
+              <SocialLink 
+                icon="logo-linkedin" 
+                label="LinkedIn"
+                color={isDarkMode ? '#fff' : '#0077b5'}
+                onPress={() => Linking.openURL(contact.linkedin!)}
+              />
+            )}
+            {contact.facebook && (
+              <SocialLink 
+                icon="logo-facebook" 
+                label="Facebook"
+                color={isDarkMode ? '#fff' : '#1877f2'}
+                onPress={() => Linking.openURL(contact.facebook!)}
+              />
+            )}
+            {contact.twitter && (
+              <SocialLink 
+                icon="logo-twitter" 
+                label="Twitter"
+                color={isDarkMode ? '#fff' : '#1DA1F2'}
+                onPress={() => Linking.openURL(contact.twitter!)}
+              />
+            )}
+            {contact.telegram && (
+              <SocialLink 
+                icon="paper-plane" 
+                label="Telegram"
+                color={isDarkMode ? '#fff' : '#0088cc'}
+                onPress={() => Linking.openURL(contact.telegram!)}
+              />
+            )}
+            {contact.github && (
+              <SocialLink 
+                icon="logo-github" 
+                label="GitHub"
+                color={isDarkMode ? '#fff' : '#333'}
+                onPress={() => Linking.openURL(contact.github!)}
+              />
+            )}
+            {contact.website && (
+              <SocialLink 
+                icon="globe" 
+                label="Website"
+                color={isDarkMode ? '#fff' : '#4a5568'}
+                onPress={() => Linking.openURL(contact.website!)}
+              />
+            )}
           </View>
-          {contact.linkedin && (
-            <TouchableOpacity 
-              onPress={() => Linking.openURL(contact.linkedin)}
-              className="flex-row items-center mb-4"
-            >
-              <Ionicons name="logo-linkedin" size={20} color={isDarkMode ? '#fff' : '#0077b5'} />
-              <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>LinkedIn Profile</Text>
-            </TouchableOpacity>
-          )}
-          {contact.facebook && (
-            <TouchableOpacity 
-              onPress={() => Linking.openURL(contact.facebook)}
-              className="flex-row items-center"
-            >
-              <Ionicons name="logo-facebook" size={20} color={isDarkMode ? '#fff' : '#1877f2'} />
-              <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Facebook Profile</Text>
-            </TouchableOpacity>
-          )}
         </View>
       </View>
     </ScrollView>
   );
 }
+
+// Helper components
+const DetailItem = ({ label, value }: { label: string; value?: string | null }) => {
+  const { isDarkMode } = useTheme();
+  if (!value) return null;
+  
+  return (
+    <View className="mb-4">
+      <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{label}</Text>
+      <Text className={`text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{value}</Text>
+    </View>
+  );
+};
+
+const SocialLink = ({ 
+  icon, 
+  label, 
+  color, 
+  onPress 
+}: { 
+  icon: string; 
+  label: string; 
+  color: string; 
+  onPress: () => void;
+}) => {
+  const { isDarkMode } = useTheme();
+  
+  return (
+    <TouchableOpacity 
+      onPress={onPress}
+      className="flex-row items-center mb-4"
+    >
+      <Ionicons name={icon as any} size={20} color={color} />
+      <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{label}</Text>
+    </TouchableOpacity>
+  );
+};

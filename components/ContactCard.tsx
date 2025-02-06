@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
@@ -20,6 +20,21 @@ export default function ContactCard({ contact, isCompact = false }: ContactCardP
     });
   };
 
+  const AvatarComponent = () => (
+    contact.photo ? (
+      <Image 
+        source={{ uri: contact.photo }} 
+        className="w-10 h-10 rounded-full"
+      />
+    ) : (
+      <View className="w-10 h-10 bg-blue-500 rounded-full items-center justify-center">
+        <Text className="text-white text-lg font-bold">
+          {contact.name.charAt(0).toUpperCase()}
+        </Text>
+      </View>
+    )
+  );
+
   if (isCompact) {
     return (
       <TouchableOpacity
@@ -28,8 +43,8 @@ export default function ContactCard({ contact, isCompact = false }: ContactCardP
           isDarkMode ? 'bg-gray-800' : 'bg-white'
         } shadow-sm`}
       >
-        <View className="w-10 h-10 bg-blue-500 rounded-full items-center justify-center mr-3">
-          <Ionicons name="person" size={20} color="white" />
+        <View className="mr-3">
+          <AvatarComponent />
         </View>
         <View className="flex-1">
           <Text className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
