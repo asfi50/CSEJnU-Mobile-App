@@ -74,10 +74,17 @@ export default function PostScreen() {
     if (!id) return;
     setLoadingComments(true);
     try {
-      const response = await fetch(`${wp_url}/wp-json/wp/v2/comments?post=${id}&per_page=100&orderby=date&order=desc`);
+      // Update the fetch URL to include threading parameters
+      const response = await fetch(
+        `${wp_url}/wp-json/wp/v2/comments?post=${id}&per_page=100&orderby=date&order=asc&_embed`
+      );
       if (!response.ok) throw new Error('Failed to fetch comments');
       const data = await response.json();
-      setComments(data);
+      // Sort comments by date
+      const sortedData = data.sort((a: any, b: any) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      setComments(sortedData);
     } catch (err) {
       console.error('Comments fetch error:', err);
       setComments([]);
