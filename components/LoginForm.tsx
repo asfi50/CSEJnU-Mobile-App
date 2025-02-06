@@ -1,6 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, Switch, Linking, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import { useAuth, TEST_CREDENTIALS } from '../context/AuthContext';
+import { wp_url } from '@/config';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -27,7 +28,7 @@ export default function LoginForm() {
   };
 
   const handleRegister = async () => {
-    const registerUrl = 'https://example.com/register'; // Replace with your actual registration URL
+    const registerUrl = `${wp_url}/register`;
     try {
       await Linking.openURL(registerUrl);
     } catch (error) {
@@ -35,10 +36,19 @@ export default function LoginForm() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    const resetUrl = `${wp_url}/password-reset`;
+    try {
+      await Linking.openURL(resetUrl);
+    } catch (error) {
+      setError('Could not open password reset page');
+    }
+  };
+
   return (
     <View className={`
       p-6 mx-5 rounded-3xl shadow-xl
-      ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
+      ${isDarkMode ? 'bg-gray-800/90' : 'bg-white'}
     `}>
       <Text className={`text-2xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
         Welcome Back
@@ -98,16 +108,13 @@ export default function LoginForm() {
           <Switch
             value={rememberMe}
             onValueChange={setRememberMe}
-            trackColor={{ false: isDarkMode ? '#4b5563' : '#e5e7eb', true: '#4CAF50' }}
+            trackColor={{ false: isDarkMode ? '#4b5563' : '#e5e7eb', true: '#3b82f6' }}
             thumbColor={rememberMe ? '#fff' : isDarkMode ? '#9ca3af' : '#f4f3f4'}
           />
           <Text className={`ml-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Remember me
           </Text>
         </View>
-        <TouchableOpacity>
-          <Text className="text-green-500">Forgot Password?</Text>
-        </TouchableOpacity>
       </View>
 
       {error ? (
@@ -121,7 +128,7 @@ export default function LoginForm() {
         disabled={isLoading}
         className={`
           p-4 rounded-xl flex-row justify-center items-center
-          ${isLoading ? 'bg-green-400' : 'bg-green-500 active:bg-green-600'}
+          ${isLoading ? 'bg-blue-400' : 'bg-blue-500 active:bg-blue-600'}
         `}
       >
         {isLoading ? (
@@ -137,9 +144,19 @@ export default function LoginForm() {
           Don't have an account?{' '}
         </Text>
         <TouchableOpacity onPress={handleRegister}>
-          <Text className="text-green-500 font-semibold">Register here</Text>
+          <Text className="text-blue-500 font-semibold">Register here</Text>
         </TouchableOpacity>
       </View>
+
+      <View className="mt-2 flex-row justify-center">
+        <Text className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          Forgot your password?{' '}
+        </Text>
+        <TouchableOpacity onPress={handleForgotPassword}>
+          <Text className="text-blue-500 font-semibold">Reset here</Text>
+        </TouchableOpacity>
+      </View>
+
     </View>
   );
 }

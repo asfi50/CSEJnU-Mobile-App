@@ -7,19 +7,7 @@ import Toast from 'react-native-toast-message';
 import ContactCard from "@/components/ContactCard";
 import ContactSearch from "@/components/ContactSearch";
 import { AUTH_URL } from "@/config";
-
-interface Contact {
-  roles: {
-    um_student?: boolean;
-    um_teacher?: boolean;
-  };
-  name: string;
-  email: string;
-  phone: string;
-  blood_type: string;
-  linkedin: string;
-  facebook: string;
-}
+import { Contact } from "@/types/contact";
 
 export default function Contacts() {
   const { isDarkMode } = useTheme();
@@ -37,7 +25,8 @@ export default function Contacts() {
     const filtered = contacts.filter(contact => 
       contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.phone.includes(searchQuery)
+      (contact.phone?.includes(searchQuery) || '') ||
+      (contact.student_id?.includes(searchQuery) || '')
     );
     setFilteredContacts(filtered);
   }, [searchQuery, contacts]);
@@ -47,26 +36,8 @@ export default function Contacts() {
       const token = await AsyncStorage.getItem('token');
       if (!token) throw new Error('No auth token found');
 
-      // Debug toast for token
-      Toast.show({
-        type: 'info',
-        text1: 'Debug: Token',
-        text2: token.slice(0, 20) + '...',
-        position: 'bottom',
-        visibilityTime: 4000,
-      });
-
       const response = await fetch(`${AUTH_URL}/api/contacts?token=${token}`);
       const data = await response.json();
-      
-      // Debug toast for response
-      Toast.show({
-        type: 'info',
-        text1: 'Debug: Response',
-        text2: JSON.stringify(data).slice(0, 50) + '...',
-        position: 'bottom',
-        visibilityTime: 4000,
-      });
 
       if (!data) {
         throw new Error('Empty response received');

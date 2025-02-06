@@ -87,15 +87,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         
         // Show token toast after a slight delay
-        setTimeout(() => {
-          Toast.show({
-            type: 'info',
-            text1: 'JWT Token (Dev Only)',
-            text2: data.token.slice(0, 20) + '...',
-            position: 'bottom',
-            visibilityTime: 4000,
-          });
-        }, 2500);
+        // setTimeout(() => {
+        //   Toast.show({
+        //     type: 'info',
+        //     text1: 'JWT Token (Dev Only)',
+        //     text2: data.token.slice(0, 20) + '...',
+        //     position: 'bottom',
+        //     visibilityTime: 4000,
+        //   });
+        // }, 2500);
         
         return true;
       }
