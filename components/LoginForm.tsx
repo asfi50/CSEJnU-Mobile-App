@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Switch, Linking } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Switch, Linking, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import { useAuth, TEST_CREDENTIALS } from '../context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 export default function LoginForm() {
   const { isDarkMode } = useTheme();
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
   const [username, setUsername] = useState(TEST_CREDENTIALS.username);
   const [password, setPassword] = useState(TEST_CREDENTIALS.password);
   const [rememberMe, setRememberMe] = useState(false);
@@ -16,10 +16,11 @@ export default function LoginForm() {
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
+    if (isLoading) return;
     setError('');
     const success = await login(username, password, rememberMe);
     if (success) {
-      router.replace('/');
+      router.replace('/' as any);
     } else {
       setError('Invalid credentials. Please try again.');
     }
@@ -117,10 +118,17 @@ export default function LoginForm() {
 
       <TouchableOpacity 
         onPress={handleSubmit}
-        className="bg-green-500 p-4 rounded-xl active:bg-green-600"
+        disabled={isLoading}
+        className={`
+          p-4 rounded-xl flex-row justify-center items-center
+          ${isLoading ? 'bg-green-400' : 'bg-green-500 active:bg-green-600'}
+        `}
       >
+        {isLoading ? (
+          <ActivityIndicator color="white" className="mr-2" />
+        ) : null}
         <Text className="text-white font-semibold text-center text-base">
-          Login
+          {isLoading ? 'Logging in...' : 'Login'}
         </Text>
       </TouchableOpacity>
 
