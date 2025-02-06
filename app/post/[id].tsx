@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, ActivityIndicator, Image, useWindowDimensions, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Image, useWindowDimensions, StyleSheet, Linking, Pressable } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
 import { useState, useEffect } from 'react';
@@ -7,6 +7,8 @@ import { decode } from 'html-entities';
 import ProgressiveImage from '@/components/ProgressiveImage';
 import { WebView } from 'react-native-webview';
 import LightboxImage from '@/components/LightboxImage';
+import Comments from '@/components/Comments';
+import { Ionicons } from '@expo/vector-icons';
 
 interface WPPost {
   title: { rendered: string };
@@ -19,6 +21,8 @@ interface WPPost {
     name: string;
     avatar_urls: { [key: string]: string };
   };
+  comments?: Array<any>;
+  link?: string; // Add link property
 }
 
 export default function PostScreen() {
@@ -29,9 +33,14 @@ export default function PostScreen() {
   const [loading, setLoading] = useState(true);
   const [webViewHeight, setWebViewHeight] = useState(1000);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [comments, setComments] = useState<Array<any>>([]);
+  const [loadingComments, setLoadingComments] = useState(true);
 
   useEffect(() => {
-    fetchPost();
+    if (id) {
+      fetchPost();
+      fetchComments();
+    }
   }, [id]);
 
   const fetchPost = async () => {
@@ -49,7 +58,8 @@ export default function PostScreen() {
         author: data._embedded?.['author']?.[0] || {
           name: 'Unknown',
           avatar_urls: { '96': 'https://www.gravatar.com/avatar/00000000000000000000000000000000' }
-        }
+        },
+        link: data.link // Add link from WordPress response
       };
 
       setPost(formattedPost);
@@ -57,6 +67,32 @@ export default function PostScreen() {
       console.error('Post fetch error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    if (!id) return;
+    setLoadingComments(true);
+    try {
+      const response = await fetch(`${wp_url}/wp-json/wp/v2/comments?post=${id}&per_page=100&orderby=date&order=desc`);
+      if (!response.ok) throw new Error('Failed to fetch comments');
+      const data = await response.json();
+      setComments(data);
+    } catch (err) {
+      console.error('Comments fetch error:', err);
+      setComments([]);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const openInBrowser = async () => {
+    if (post?.link) {
+      try {
+        await Linking.openURL(post.link);
+      } catch (err) {
+        console.error('Error opening URL:', err);
+      }
     }
   };
 
@@ -165,19 +201,31 @@ export default function PostScreen() {
             {post.title.rendered}
           </Text>
           {/* Author and Date */}
-          <View className="flex-row items-center mb-6">
-            <Image
-              source={{ uri: post.author.avatar_urls['96'] }}
-              className="w-8 h-8 rounded-full mr-2"
-            />
-            <View>
-              <Text className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                {post.author.name}
-              </Text>
-              <Text className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                {post.date}
-              </Text>
+          <View className="flex-row items-center justify-between mb-6">
+            <View className="flex-row items-center">
+              <Image
+                source={{ uri: post.author.avatar_urls['96'] }}
+                className="w-8 h-8 rounded-full mr-2"
+              />
+              <View>
+                <Text className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {post.author.name}
+                </Text>
+                <Text className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                  {post.date}
+                </Text>
+              </View>
             </View>
+            <Pressable
+              onPress={openInBrowser}
+              className={`p-2 rounded-full ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}
+            >
+              <Ionicons 
+                name="open-outline" 
+                size={20} 
+                color={isDarkMode ? '#D1D5DB' : '#374151'}
+              />
+            </Pressable>
           </View>
           {/* Content */}
           <WebView
@@ -221,6 +269,15 @@ export default function PostScreen() {
                 </Text>
               ))}
             </View>
+          )}
+        </View>
+        <View className="px-4 pb-8">
+          {loadingComments ? (
+            <View className="py-4">
+              <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+            </View>
+          ) : (
+            <Comments comments={comments} />
           )}
         </View>
       </ScrollView>
