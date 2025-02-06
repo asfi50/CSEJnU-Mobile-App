@@ -3,7 +3,12 @@ import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-export default function Header({ title }: { title?: string }) {
+interface HeaderProps {
+  title?: string;
+  showBack?: boolean;
+}
+
+export default function Header({ title, showBack = false }: HeaderProps) {
   const { isDarkMode, toggleTheme } = useTheme();
   const router = useRouter();
 
@@ -13,9 +18,24 @@ export default function Header({ title }: { title?: string }) {
       ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}
       border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}
     `}>
-      <Text className={`text-lg font-semibold ${
-        isDarkMode ? 'text-white' : 'text-gray-900'
-      }`}>
+      {showBack && (
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="mr-4"
+        >
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={isDarkMode ? '#fff' : '#000'}
+          />
+        </TouchableOpacity>
+      )}
+      <Text 
+        numberOfLines={1} 
+        className={`flex-1 text-lg font-semibold ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}
+      >
         {title || 'Dashboard'}
       </Text>
       

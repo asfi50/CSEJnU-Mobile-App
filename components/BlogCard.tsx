@@ -1,9 +1,10 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from "@/context/ThemeContext";
-import { Linking } from 'react-native';
+import { useRouter } from 'expo-router';
 
 interface BlogCardProps {
   post: {
+    id: number;
     title: { rendered: string };
     excerpt: { rendered: string };
     date: string;
@@ -20,13 +21,14 @@ interface BlogCardProps {
 
 export default function BlogCard({ post }: BlogCardProps) {
   const { isDarkMode } = useTheme();
+  const router = useRouter();
 
   return (
     <TouchableOpacity
       className={`mb-6 rounded-xl overflow-hidden ${
         isDarkMode ? 'bg-gray-800' : 'bg-white'
       } shadow-lg`}
-      onPress={() => Linking.openURL(post.link)}
+      onPress={() => router.push(`/post/${post.id}`)}
     >
       <Image
         source={{ 
