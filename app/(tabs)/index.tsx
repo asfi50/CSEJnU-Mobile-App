@@ -1,14 +1,97 @@
-import React from 'react';
-import { Text, View, ScrollView, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from 'react';
+import { Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
+import { YOUTUBE_API_KEY, CHANNEL_ID, AUTH_URL, wp_url } from "@/config";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+interface DashboardData {
+  stats: {
+    blogCount: number;
+    videoCount: number;
+    contactCount: number;
+  };
+  recentActivities: Array<{
+    type: 'blog' | 'video' | 'contact';
+    title: string;
+    timestamp: string;
+  }>;
+}
 
 export default function Index() {
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    stats: { blogCount: 0, videoCount: 0, contactCount: 0 },
+    recentActivities: []
+  });
 
-  const StatCard = ({ title, value, icon }: { title: string; value: string; icon: string }) => (
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('token');
+      
+      // Fetch all data in parallel
+      const [blogData, videoData, contactData] = await Promise.all([
+        fetch(`${wp_url}/wp-json/wp/v2/posts?per_page=1`).then(res => ({
+          count: parseInt(res.headers.get('X-WP-Total') || '0'),
+          recent: res.json()
+        })),
+        fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${YOUTUBE_API_KEY}`)
+          .then(res => res.json()),
+        fetch(`${AUTH_URL}/api/contacts?token=${token}`).then(res => res.json())
+      ]);
+
+      // Compile stats
+      const stats = {
+        blogCount: blogData.count,
+        videoCount: parseInt(videoData.items?.[0]?.statistics?.videoCount || '0'),
+        contactCount: Array.isArray(contactData) ? contactData.length : 0
+      };
+
+      // Compile recent activities
+      const recentActivities: Array<{ type: 'blog' | 'video' | 'contact'; title: string; timestamp: string }> = [];
+      
+      // Add most recent blog post
+      if (Array.isArray(await blogData.recent) && (await blogData.recent)[0]) {
+        const recentPost = (await blogData.recent)[0];
+        recentActivities.push({
+          type: 'blog',
+          title: recentPost.title.rendered,
+          timestamp: new Date(recentPost.date).toLocaleDateString()
+        });
+      }
+
+      // Add most recent video
+      const recentVideo = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=1&order=date&type=video&key=${YOUTUBE_API_KEY}`
+      ).then(res => res.json());
+
+      if (recentVideo.items?.[0]) {
+        recentActivities.push({
+          type: 'video',
+          title: recentVideo.items[0].snippet.title,
+          timestamp: new Date(recentVideo.items[0].snippet.publishedAt).toLocaleDateString()
+        });
+      }
+
+      setDashboardData({ stats, recentActivities });
+    } catch (err) {
+      console.error('Dashboard fetch error:', err);
+      setError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const StatCard = ({ title, value, icon }: { title: string; value: number; icon: string }) => (
     <View className={`p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} flex-1 mx-1`}>
       <Ionicons name={icon as any} size={24} color={isDarkMode ? '#60A5FA' : '#2563EB'} />
       <Text className={`text-2xl font-bold mt-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -40,6 +123,22 @@ export default function Index() {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View className={`flex-1 justify-center items-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <ActivityIndicator size="large" color={isDarkMode ? '#fff' : '#000'} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className={`flex-1 justify-center items-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <Text className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{error}</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <View className="p-5">
@@ -55,9 +154,21 @@ export default function Index() {
 
         {/* Quick Stats */}
         <View className="flex-row mb-6">
-          <StatCard title="Blog Posts" value="24" icon="document-text" />
-          <StatCard title="Videos" value="12" icon="videocam" />
-          <StatCard title="Contacts" value="156" icon="people" />
+          <StatCard 
+            title="Blog Posts" 
+            value={dashboardData.stats.blogCount} 
+            icon="document-text" 
+          />
+          <StatCard 
+            title="Videos" 
+            value={dashboardData.stats.videoCount} 
+            icon="videocam" 
+          />
+          <StatCard 
+            title="Contacts" 
+            value={dashboardData.stats.contactCount} 
+            icon="people" 
+          />
         </View>
 
         {/* Recent Activity */}
@@ -65,10 +176,16 @@ export default function Index() {
           <Text className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             Recent Activity
           </Text>
-          <View className="border-l-2 border-blue-500 pl-4">
-            <Text className={`${isDarkMode ? 'text-white' : 'text-gray-900'}`}>New blog post published</Text>
-            <Text className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>2 hours ago</Text>
-          </View>
+          {dashboardData.recentActivities.map((activity, index) => (
+            <View key={index} className="border-l-2 border-blue-500 pl-4 mb-3">
+              <Text className={`${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                {activity.title}
+              </Text>
+              <Text className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                {activity.timestamp}
+              </Text>
+            </View>
+          ))}
         </View>
 
         {/* Navigation Cards */}
@@ -80,19 +197,19 @@ export default function Index() {
         />
         <NavigationCard 
           title="YouTube Content" 
-          description="Watch latest videos"
+          description={`${dashboardData.stats.videoCount} videos available`}
           icon="logo-youtube"
           route="/youtube"
         />
         <NavigationCard 
           title="Blog Posts" 
-          description="Read recent articles"
+          description={`${dashboardData.stats.blogCount} posts published`}
           icon="newspaper"
           route="/blog"
         />
         <NavigationCard 
           title="Contact Directory" 
-          description="Browse contacts"
+          description={`${dashboardData.stats.contactCount} contacts available`}
           icon="people"
           route="/contacts"
         />
