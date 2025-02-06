@@ -10,6 +10,7 @@ interface AuthContextProps {
   login: (username: string, password: string, rememberMe: boolean) => Promise<boolean>;
   logout: () => void;
   user: UserData | null;
+  token: string | null;
 }
 
 interface UserData {
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextProps>({
   login: async () => false,
   logout: () => {},
   user: null,
+  token: null,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     checkLoginStatus();
@@ -38,8 +41,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkLoginStatus = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
+      const storedToken = await AsyncStorage.getItem('token');
+      if (storedToken) {
+        setToken(storedToken);
         const userData = await AsyncStorage.getItem('userData');
         if (userData) {
           setUser(JSON.parse(userData));
@@ -67,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await response.json();
 
       if (data.success && data.token) {
+        setToken(data.token);
         await AsyncStorage.setItem('token', data.token);
         await AsyncStorage.setItem('userData', JSON.stringify(data.user));
         setUser(data.user);
@@ -118,6 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoggedIn(false);
       setUser(null);
+      setToken(null);
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('userData');
       Toast.show({
@@ -131,7 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isLoading, isInitializing, login, logout, user }}>
+    <AuthContext.Provider value={{ isLoggedIn, isLoading, isInitializing, login, logout, user, token }}>
       {children}
     </AuthContext.Provider>
   );
