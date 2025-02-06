@@ -1,29 +1,29 @@
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { useEffect, useState, useCallback } from "react";
-import { YOUTUBE_API_KEY, CHANNEL_ID } from "@/config";
+import { AUTH_URL } from "@/config";
 import VideoCard from "@/components/VideoCard";
+import { useAuth } from "@/context/AuthContext";
 
 interface Video {
-  id: string;
-  snippet: {
-    title: string;
-    channelTitle: string;
-    publishedAt: string;
-    resourceId?: {
-      videoId: string;
-    };
-    thumbnails: {
-      high: { url: string };
-    };
-  };
-  statistics?: {
-    viewCount: string;
+  video_id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  published_at: string;
+}
+
+interface APIResponse {
+  videos: Video[];
+  pagination: {
+    next_page_token?: string;
+    prev_page_token?: string;
   };
 }
 
 export default function YouTube() {
   const { isDarkMode } = useTheme();
+  const { token } = useAuth();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -38,62 +38,29 @@ export default function YouTube() {
 
   const fetchVideos = async (pageToken?: string) => {
     try {
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
       if (!pageToken) setLoading(true);
       else setLoadingMore(true);
 
-      console.log('Fetching videos with token:', pageToken); // Debug log
-
-      // First, get channel's uploads playlist ID
-      const channelResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${YOUTUBE_API_KEY}`
-      );
-      const channelData = await channelResponse.json();
-      console.log('Channel data:', channelData); // Debug log
-
-      if (!channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads) {
-        throw new Error('Channel or uploads playlist not found');
+      const url = `${AUTH_URL}/api/youtube.php?token=${token}${pageToken ? '&pageToken=' + pageToken : ''}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch videos');
       }
 
-      const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
+      const data: APIResponse = await response.json();
 
-      // Get videos from playlist
-      const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=10&playlistId=${uploadsPlaylistId}&key=${YOUTUBE_API_KEY}${pageToken ? '&pageToken=' + pageToken : ''}`;
-      console.log('Fetching playlist:', playlistUrl); // Debug log
-
-      const videosResponse = await fetch(playlistUrl);
-      const videosData = await videosResponse.json();
-      console.log('Videos data:', videosData); // Debug log
-
-      if (!videosData.items?.length) {
+      if (!data.videos?.length) {
         throw new Error('No videos found');
       }
 
-      // Get video statistics
-      const videoIds = videosData.items.map((item: any) => item.snippet.resourceId.videoId);
-      const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds.join(',')}&key=${YOUTUBE_API_KEY}`;
-      const statsResponse = await fetch(statsUrl);
-      const statsData = await statsResponse.json();
-      console.log('Stats data:', statsData); // Debug log
-
-      // Merge video data with statistics
-      const videosWithStats = videosData.items.map((video: any) => {
-        const stats = statsData.items?.find((stat: any) => 
-          stat.id === video.snippet.resourceId.videoId
-        );
-        return {
-          id: video.snippet.resourceId.videoId,
-          snippet: {
-            ...video.snippet,
-            channelTitle: video.snippet.channelTitle || 'Unknown Channel'
-          },
-          statistics: stats?.statistics || { viewCount: '0' }
-        };
-      });
-
-      console.log('Processed videos:', videosWithStats); // Debug log
-      setVideos(prev => pageToken ? [...prev, ...videosWithStats] : videosWithStats);
-      setNextPageToken(videosData.nextPageToken || null);
-      setHasMore(!!videosData.nextPageToken);
+      setVideos(prev => pageToken ? [...prev, ...data.videos] : data.videos);
+      setNextPageToken(data.pagination.next_page_token || null);
+      setHasMore(!!data.pagination.next_page_token);
     } catch (err) {
       console.error('Failed to fetch videos:', err);
       setError(err instanceof Error ? err.message : 'Failed to load videos');
@@ -109,7 +76,6 @@ export default function YouTube() {
     setRefreshing(false);
   };
 
-  // Add debounce utility
   const debounce = (func: Function, wait: number) => {
     let timeout: NodeJS.Timeout;
     return function executedFunction(...args: any[]) {
@@ -122,7 +88,6 @@ export default function YouTube() {
     };
   };
 
-  // Improve loadMore function
   const loadMore = useCallback(debounce(() => {
     if (!loadingMore && hasMore && nextPageToken && videos.length > 0) {
       console.log('Loading more videos...');
@@ -130,9 +95,8 @@ export default function YouTube() {
     }
   }, 500), [loadingMore, hasMore, nextPageToken, videos.length]);
 
-  // Improve scroll threshold calculation
   const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: any) => {
-    const threshold = 0.8; // Load when 80% scrolled
+    const threshold = 0.8;
     return (layoutMeasurement.height + contentOffset.y) / contentSize.height > threshold;
   };
 
@@ -160,8 +124,8 @@ export default function YouTube() {
           loadMore();
         }
       }}
-      scrollEventThrottle={1000} // Reduced from 400 to prevent too frequent checks
-      onMomentumScrollEnd={({nativeEvent}) => { // Add momentum scroll handler
+      scrollEventThrottle={1000}
+      onMomentumScrollEnd={({nativeEvent}) => {
         if (isCloseToBottom(nativeEvent)) {
           loadMore();
         }
@@ -177,7 +141,7 @@ export default function YouTube() {
     >
       <View className="p-4">
         {videos.map((video) => (
-          <VideoCard key={video.id} video={video} />
+          <VideoCard key={video.video_id} video={video} />
         ))}
         
         {loadingMore && (
