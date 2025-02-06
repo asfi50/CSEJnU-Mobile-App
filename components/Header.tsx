@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,38 +14,27 @@ export default function Header({ title, showBack = false }: HeaderProps) {
   const router = useRouter();
 
   return (
-    <View className={`
-      flex-row items-center justify-between px-4 py-3
-      ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}
-      border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}
-    `}>
+    <View className={`flex-row items-center px-4 pt-12 pb-3 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
       {showBack && (
         <TouchableOpacity
           onPress={() => router.back()}
           className="mr-4"
         >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color={isDarkMode ? '#fff' : '#000'}
+          <Ionicons 
+            name="arrow-back" 
+            size={24} 
+            color={isDarkMode ? '#ffffff' : '#000000'} 
           />
         </TouchableOpacity>
       )}
-      <Text 
-        numberOfLines={1} 
-        className={`flex-1 text-lg font-semibold ${
-          isDarkMode ? 'text-white' : 'text-gray-900'
-        }`}
-      >
+      <Text className={`text-lg font-semibold ml-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
         {title || 'Dashboard'}
       </Text>
       
-      <View className="flex-row items-center space-x-4">
+      <View className="flex-row items-center ml-auto">
         <TouchableOpacity
           onPress={toggleTheme}
-          className={`p-2 rounded-full ${
-            isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-          }`}
+          className={`p-2 rounded-full ml-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
         >
           <Ionicons 
             name={isDarkMode ? "sunny" : "moon"} 
@@ -55,9 +45,7 @@ export default function Header({ title, showBack = false }: HeaderProps) {
 
         <TouchableOpacity
           onPress={() => router.push('/profile')}
-          className={`p-2 rounded-full ${
-            isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-          }`}
+          className={`p-2 rounded-full ml-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
         >
           <Ionicons 
             name="person-circle-outline" 

@@ -1,30 +1,42 @@
-import { Slot } from "expo-router";
-import { View, StatusBar, ActivityIndicator } from "react-native";
-import { AuthProvider, useAuth } from "@/context/AuthContext";
+import React from 'react';
+import { Stack } from "expo-router";
+import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { View, ActivityIndicator } from "react-native";
 import Toast from 'react-native-toast-message';
 import './global.css';
 
-function ProtectedLayout() {
+function LayoutContent() {
   const { isLoggedIn, isInitializing } = useAuth();
   const { isDarkMode } = useTheme();
 
   if (isInitializing) {
     return (
-      <View className={`flex-1 justify-center items-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color={isDarkMode ? '#fff' : '#000'} />
       </View>
     );
   }
 
   return (
-    <View className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={isDarkMode ? '#111827' : '#f9fafb'}
-      />
-      <Slot />
-    </View>
+    <>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          animation: 'slide_from_right', // or "fade" or "flip" or "none"
+          contentStyle: {
+            backgroundColor: isDarkMode ? '#111827' : '#f9fafb',
+          },
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="post" options={{ headerShown: false }} />
+        <Stack.Screen name="profile" options={{ headerShown: false }} />
+        <Stack.Screen name="contact" options={{ headerShown: false }} />
+      </Stack>
+      <Toast />
+    </>
   );
 }
 
@@ -32,8 +44,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ProtectedLayout />
-        <Toast />
+        <LayoutContent />
       </AuthProvider>
     </ThemeProvider>
   );
