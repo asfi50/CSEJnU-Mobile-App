@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Stack } from "expo-router";
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
@@ -6,10 +6,24 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { View, ActivityIndicator } from "react-native";
 import Toast from 'react-native-toast-message';
 import './global.css';
+import SplashScreen from '@/components/SplashScreen';
 
 function LayoutContent() {
   const { isLoggedIn, isInitializing } = useAuth();
   const { isDarkMode } = useTheme();
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500); // Show splash for 2.5 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showSplash) {
+    return <SplashScreen />;
+  }
 
   if (isInitializing) {
     return (
