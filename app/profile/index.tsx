@@ -26,7 +26,7 @@ interface ProfileData {
 }
 
 export default function Profile() {
-  const { logout, token } = useAuth();
+  const { logout, token, checkTokenExpiration } = useAuth();
   const { isDarkMode } = useTheme();
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -37,6 +37,11 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
+      if (checkTokenExpiration()) {
+        router.replace('/login');
+        return;
+      }
+      
       const response = await fetch(`${AUTH_URL}/verify?token=${token}`);
       const data = await response.json();
       if (data.valid) {

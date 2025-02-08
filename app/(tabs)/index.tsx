@@ -3,8 +3,9 @@ import { Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from "rea
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import { YOUTUBE_API_KEY, CHANNEL_ID, AUTH_URL, wp_url } from "@/config";
+import { AUTH_URL, wp_url } from "@/config";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/context/AuthContext';
 
 interface DashboardData {
   stats: {
@@ -22,6 +23,7 @@ interface DashboardData {
 export default function Index() {
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const { checkTokenExpiration } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [dashboardData, setDashboardData] = useState<DashboardData>({
@@ -35,24 +37,28 @@ export default function Index() {
 
   const fetchDashboardData = async () => {
     try {
+      if (checkTokenExpiration()) {
+        router.replace('/login');
+        return;
+      }
+
       setLoading(true);
       const token = await AsyncStorage.getItem('token');
       
       // Fetch all data in parallel
-      const [blogData, videoData, contactData] = await Promise.all([
+      const [blogData, youtubeData, contactData] = await Promise.all([
         fetch(`${wp_url}/wp-json/wp/v2/posts?per_page=1`).then(res => ({
           count: parseInt(res.headers.get('X-WP-Total') || '0'),
           recent: res.json()
         })),
-        fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${CHANNEL_ID}&key=${YOUTUBE_API_KEY}`)
-          .then(res => res.json()),
+        fetch(`${AUTH_URL}/api/youtube.php?token=${token}`).then(res => res.json()),
         fetch(`${AUTH_URL}/api/contacts?token=${token}`).then(res => res.json())
       ]);
 
       // Compile stats
       const stats = {
         blogCount: blogData.count,
-        videoCount: parseInt(videoData.items?.[0]?.statistics?.videoCount || '0'),
+        videoCount: youtubeData.videos?.length || 0,
         contactCount: Array.isArray(contactData) ? contactData.length : 0
       };
 
@@ -70,15 +76,11 @@ export default function Index() {
       }
 
       // Add most recent video
-      const recentVideo = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=1&order=date&type=video&key=${YOUTUBE_API_KEY}`
-      ).then(res => res.json());
-
-      if (recentVideo.items?.[0]) {
+      if (youtubeData.videos?.[0]) {
         recentActivities.push({
           type: 'video',
-          title: recentVideo.items[0].snippet.title,
-          timestamp: new Date(recentVideo.items[0].snippet.publishedAt).toLocaleDateString()
+          title: youtubeData.videos[0].title,
+          timestamp: new Date(youtubeData.videos[0].published_at).toLocaleDateString()
         });
       }
 

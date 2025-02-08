@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { AUTH_URL } from "@/config";
+import { isTokenExpired } from '@/utils/jwt';
 
 interface AuthContextProps {
   isLoggedIn: boolean;
@@ -11,6 +12,7 @@ interface AuthContextProps {
   logout: () => void;
   user: UserData | null;
   token: string | null;
+  checkTokenExpiration: () => boolean;
 }
 
 interface UserData {
@@ -26,6 +28,7 @@ const AuthContext = createContext<AuthContextProps>({
   logout: () => {},
   user: null,
   token: null,
+  checkTokenExpiration: () => false,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -43,11 +46,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const storedToken = await AsyncStorage.getItem('token');
       if (storedToken) {
-        setToken(storedToken);
-        const userData = await AsyncStorage.getItem('userData');
-        if (userData) {
-          setUser(JSON.parse(userData));
-          setIsLoggedIn(true);
+        if (isTokenExpired(storedToken)) {
+          await logout();
+          Toast.show({
+            type: 'info',
+            text1: 'Session Expired',
+            text2: 'Please login again',
+          });
+        } else {
+          setToken(storedToken);
+          const userData = await AsyncStorage.getItem('userData');
+          if (userData) {
+            setUser(JSON.parse(userData));
+            setIsLoggedIn(true);
+          }
         }
       }
     } catch (error) {
@@ -136,8 +148,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const checkTokenExpiration = () => {
+    if (token && isTokenExpired(token)) {
+      logout();
+      Toast.show({
+        type: 'info',
+        text1: 'Session Expired',
+        text2: 'Please login again',
+      });
+      return true;
+    }
+    return false;
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isLoading, isInitializing, login, logout, user, token }}>
+    <AuthContext.Provider value={{ 
+      isLoggedIn, 
+      isLoading, 
+      isInitializing, 
+      login, 
+      logout, 
+      user, 
+      token,
+      checkTokenExpiration 
+    }}>
       {children}
     </AuthContext.Provider>
   );
