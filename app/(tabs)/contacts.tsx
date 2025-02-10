@@ -3,11 +3,14 @@ import { useTheme } from "@/context/ThemeContext";
 import { useEffect, useState, useCallback } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
-import ContactCard from "@/components/ContactCard";
-import ContactSearch from "@/components/ContactSearch";
+import ContactCard from "@/components/contact/ContactCard";
+import ContactSearch from "@/components/contact/ContactSearch";
 import { AUTH_URL } from "@/config";
 import { Contact } from "@/types/contact";
 import { saveContacts, getStoredContacts, shouldRefetchContacts } from "@/utils/storage";
+import ContactFilter from "@/components/contact/ContactFilter";
+import { ContactFilterOptions } from "@/types/contact";
+import { getUniqueBatches, getUniqueGenders, getUniqueBloodTypes } from "@/utils/contactUtils";
 
 export default function Contacts() {
   const { isDarkMode } = useTheme();
@@ -18,6 +21,24 @@ export default function Contacts() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [attemptedServerFetch, setAttemptedServerFetch] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<ContactFilterOptions>({
+    search: '',
+    roles: {
+      students: false,
+      teachers: false,
+      graduated: false,
+      cr: false,
+    },
+    batch: undefined,
+    gender: undefined,
+    blood_type: undefined,
+  });
+
+  const [availableFilterOptions, setAvailableFilterOptions] = useState({
+    batches: [] as string[],
+    genders: [] as string[],
+    bloodTypes: [] as string[],
+  });
 
   const fetchContacts = async (forceRefresh = false) => {
     try {
@@ -86,14 +107,42 @@ export default function Contacts() {
   }, []);
 
   useEffect(() => {
-    const filtered = contacts.filter(contact => 
-      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (contact.phone?.includes(searchQuery) || '') ||
-      (contact.student_id?.includes(searchQuery) || '')
-    );
+    const filtered = contacts.filter(contact => {
+      // Search filter
+      const searchMatch = 
+        contact.name.toLowerCase().includes(filterOptions.search.toLowerCase()) ||
+        contact.email.toLowerCase().includes(filterOptions.search.toLowerCase()) ||
+        (contact.phone?.includes(filterOptions.search) || '') ||
+        (contact.student_id?.includes(filterOptions.search) || '');
+      if (!searchMatch) return false;
+
+      // Roles filter
+      if (filterOptions.roles.students && !contact.roles.um_student) return false;
+      if (filterOptions.roles.teachers && !contact.roles.um_teacher) return false;
+      if (filterOptions.roles.graduated && !contact.graduated?.length) return false;
+      if (filterOptions.roles.cr && !contact.cr?.length) return false;
+
+      // Batch filter
+      if (filterOptions.batch && contact.batch !== filterOptions.batch) return false;
+
+      // Gender filter
+      if (filterOptions.gender?.length && !filterOptions.gender.some(g => contact.gender?.includes(g))) return false;
+
+      // Blood type filter
+      if (filterOptions.blood_type?.length && !filterOptions.blood_type.includes(contact.blood_type || '')) return false;
+
+      return true;
+    });
     setFilteredContacts(filtered);
-  }, [searchQuery, contacts]);
+  }, [filterOptions, contacts]);
+
+  useEffect(() => {
+    setAvailableFilterOptions({
+      batches: getUniqueBatches(contacts),
+      genders: getUniqueGenders(contacts),
+      bloodTypes: getUniqueBloodTypes(contacts),
+    });
+  }, [contacts]);
 
   const handleSocialLink = (url: string) => {
     if (url) Linking.openURL(url);
@@ -119,9 +168,14 @@ export default function Contacts() {
     return (
       <View className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <ContactSearch
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onClear={() => setSearchQuery('')}
+          searchQuery={filterOptions.search}
+          onSearchChange={(search) => setFilterOptions(prev => ({ ...prev, search }))}
+          onClear={() => setFilterOptions(prev => ({ ...prev, search: '' }))}
+        />
+        <ContactFilter
+          options={filterOptions}
+          onOptionsChange={setFilterOptions}
+          availableOptions={availableFilterOptions}
         />
         <ScrollView
           className="flex-1"
@@ -149,9 +203,14 @@ export default function Contacts() {
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ContactSearch
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onClear={() => setSearchQuery('')}
+        searchQuery={filterOptions.search}
+        onSearchChange={(search) => setFilterOptions(prev => ({ ...prev, search }))}
+        onClear={() => setFilterOptions(prev => ({ ...prev, search: '' }))}
+      />
+      <ContactFilter
+        options={filterOptions}
+        onOptionsChange={setFilterOptions}
+        availableOptions={availableFilterOptions}
       />
       <ScrollView 
         className="flex-1"

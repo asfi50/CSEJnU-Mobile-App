@@ -22,3 +22,16 @@ export interface Contact {
   website?: string;
   photo?: string | null;
 }
+
+export interface ContactFilterOptions {
+  search: string;
+  roles: {
+    students: boolean;
+    teachers: boolean;
+    graduated: boolean;
+    cr: boolean;
+  };
+  batch?: string;
+  gender?: string[];
+  blood_type?: string[];
+}
