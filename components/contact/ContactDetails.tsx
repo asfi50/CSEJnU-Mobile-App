@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { Contact } from '@/types/contact';
 import { DetailItem, SocialLink } from './DetailComponents';
+import { formatBirthday } from "@/utils/dateUtils";
 
 interface ContactDetailsProps {
   contact: Contact;
@@ -21,7 +22,14 @@ export default function ContactDetails({ contact }: ContactDetailsProps) {
         <DetailItem label="Phone" value={contact.phone} />
         <DetailItem label="Email" value={contact.email} />
         <DetailItem label="Blood Type" value={contact.blood_type} />
-        <DetailItem label="Birthday" value={contact.birthday} />
+        <DetailItem
+          label="Birthday"
+          value={
+            contact.birthday
+              ? formatBirthday(contact.birthday.split('/').reverse().join('/'))
+              : ''
+          }
+        />
         <DetailItem label="Gender" value={contact.gender?.join(', ')} />
       </View>
 
