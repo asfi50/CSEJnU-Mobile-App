@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { AUTH_URL, wp_url } from "@/config";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
+import VideoCarousel from "@/components/VideoCarousel";
+import BlogCarousel from "@/components/BlogCarousel";
 
 interface DashboardData {
   stats: {
@@ -18,6 +20,20 @@ interface DashboardData {
     title: string;
     timestamp: string;
   }>;
+  recentVideos: Array<{
+    video_id: string;
+    title: string;
+    description: string;
+    thumbnail: string;
+    published_at: string;
+  }>;
+  recentPosts: Array<{
+    id: number;
+    title: { rendered: string };
+    featured_media_url?: string;
+    date: string;
+    categories: Array<{ id: number; name: string }>;
+  }>;
 }
 
 export default function Index() {
@@ -28,7 +44,9 @@ export default function Index() {
   const [error, setError] = useState('');
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     stats: { blogCount: 0, videoCount: 0, contactCount: 0 },
-    recentActivities: []
+    recentActivities: [],
+    recentVideos: [],
+    recentPosts: []
   });
 
   useEffect(() => {
@@ -84,7 +102,23 @@ export default function Index() {
         });
       }
 
-      setDashboardData({ stats, recentActivities });
+      const blogResponse = await fetch(`${wp_url}/wp-json/wp/v2/posts?per_page=5&_embed`);
+      const blogPosts = await blogResponse.json();
+      
+      const formattedPosts = blogPosts.map((post: any) => ({
+        id: post.id,
+        title: { rendered: post.title.rendered },
+        featured_media_url: post._embedded?.['wp:featuredmedia']?.[0]?.source_url,
+        date: post.date,
+        categories: post._embedded?.['wp:term']?.[0] || []
+      }));
+
+      setDashboardData({ 
+        stats, 
+        recentActivities,
+        recentVideos: youtubeData.videos?.slice(0, 5) || [],
+        recentPosts: formattedPosts
+      });
     } catch (err) {
       console.error('Dashboard fetch error:', err);
       setError('Failed to load dashboard data');
@@ -172,6 +206,12 @@ export default function Index() {
             icon="people" 
           />
         </View>
+
+        {/* Video Carousel */}
+        <VideoCarousel videos={dashboardData.recentVideos} />
+
+        {/* Blog Carousel */}
+        <BlogCarousel posts={dashboardData.recentPosts} />
 
         {/* Recent Activity */}
         <View className={`p-4 rounded-xl mb-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>

@@ -11,9 +11,10 @@ interface VideoCardProps {
     thumbnail: string;
     published_at: string;
   };
+  compact?: boolean;
 }
 
-export default function VideoCard({ video }: VideoCardProps) {
+export default function VideoCard({ video, compact }: VideoCardProps) {
   const { isDarkMode } = useTheme();
 
   const formatDate = (dateString: string) => {
@@ -23,7 +24,7 @@ export default function VideoCard({ video }: VideoCardProps) {
 
   return (
     <TouchableOpacity
-      className={`mb-4 rounded-xl overflow-hidden ${
+      className={`${compact ? '' : 'mb-4'} rounded-xl overflow-hidden ${
         isDarkMode ? 'bg-gray-800' : 'bg-white'
       } shadow-sm`}
       onPress={() => Linking.openURL(`https://youtube.com/watch?v=${video.video_id}`)}
@@ -31,11 +32,13 @@ export default function VideoCard({ video }: VideoCardProps) {
       <View className="relative">
         <Image
           source={{ uri: video.thumbnail }}
-          className="w-full h-52"
+          className={`w-full ${compact ? 'h-40' : 'h-52'}`}
         />
       </View>
       <View className="p-4">
-        <Text className={`text-lg font-semibold mb-1 ${
+        <Text 
+          numberOfLines={2}
+          className={`${compact ? 'text-base' : 'text-lg'} font-semibold mb-1 ${
           isDarkMode ? 'text-white' : 'text-gray-900'
         }`}>
           {video.title}
