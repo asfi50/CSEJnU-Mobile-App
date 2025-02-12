@@ -35,3 +35,11 @@ export interface ContactFilterOptions {
   gender?: string[];
   blood_type?: string[];
 }
+
+// Update SortOption type to be more specific
+export type SortOption = 'name' | 'email' | 'batch';
+
+export interface ContactSortOptions {
+  field: SortOption;
+  ascending: boolean;
+}

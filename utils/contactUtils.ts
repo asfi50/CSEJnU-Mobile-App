@@ -1,11 +1,19 @@
 import { Contact } from "@/types/contact";
 
-export const getUniqueBatches = (contacts: Contact[]): string[] => {
+export function getUniqueBatches(contacts: Contact[]): string[] {
   const batches = contacts
     .map(c => c.batch)
     .filter((batch): batch is string => !!batch);
-  return [...new Set(batches)].sort((a, b) => b.localeCompare(a)); // Sort descending
-};
+  
+  const uniqueBatches = Array.from(new Set(batches));
+  
+  // Sort batches numerically
+  return uniqueBatches.sort((a, b) => {
+    const numA = parseInt(a) || 0;
+    const numB = parseInt(b) || 0;
+    return numA - numB;
+  });
+}
 
 export const getUniqueGenders = (contacts: Contact[]): string[] => {
   const genders = contacts

@@ -46,16 +46,15 @@ export default function ContactFilter({ options, onOptionsChange, availableOptio
     <View>
       <TouchableOpacity 
         onPress={() => setIsModalVisible(true)}
-        className={`mx-4 mb-2 p-2 rounded-lg flex-row items-center justify-center
-          ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
+        className={`h-9 px-3 rounded-lg flex-row items-center justify-center
+          ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border
+        `}
       >
-        <Ionicons name="options" size={20} color={isDarkMode ? '#fff' : '#666'} />
-        <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Filters
-          {Object.values(options.roles).some(v => v) || options.batch || 
-           options.gender?.length || options.blood_type?.length ? 
-           ' (Active)' : ''}
-        </Text>
+        <Ionicons name="options" size={16} color={isDarkMode ? '#fff' : '#666'} />
+        {(Object.values(options.roles).some(v => v) || options.batch || 
+         options.gender?.length || options.blood_type?.length) && (
+          <View className="w-2 h-2 bg-blue-500 rounded-full absolute -top-1 -right-1" />
+        )}
       </TouchableOpacity>
 
       <Modal

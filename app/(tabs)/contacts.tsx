@@ -11,6 +11,9 @@ import { saveContacts, getStoredContacts, shouldRefetchContacts } from "@/utils/
 import ContactFilter from "@/components/contact/ContactFilter";
 import { ContactFilterOptions } from "@/types/contact";
 import { getUniqueBatches, getUniqueGenders, getUniqueBloodTypes } from "@/utils/contactUtils";
+import ViewToggle from '@/components/contact/ViewToggle';
+import ContactSort from "@/components/contact/ContactSort";
+import { ContactSortOptions } from "@/types/contact";
 
 export default function Contacts() {
   const { isDarkMode } = useTheme();
@@ -40,12 +43,30 @@ export default function Contacts() {
     bloodTypes: [] as string[],
   });
 
+  const [isGridView, setIsGridView] = useState(false);
+  const [sortOptions, setSortOptions] = useState<ContactSortOptions>({
+    field: 'name',
+    ascending: true
+  });
+
+  useEffect(() => {
+    AsyncStorage.getItem('contactsViewPreference')
+      .then(value => setIsGridView(value === 'grid'));
+  }, []);
+
+  const toggleView = () => {
+    const newValue = !isGridView;
+    setIsGridView(newValue);
+    AsyncStorage.setItem('contactsViewPreference', newValue ? 'grid' : 'list');
+  };
+
   const fetchContacts = async (forceRefresh = false) => {
     try {
       // If not forced refresh, try to load from storage first
       if (!forceRefresh) {
         const storedContacts = await getStoredContacts();
         if (storedContacts.length > 0) {
+          storedContacts.sort((a, b) => a.name.localeCompare(b.name));
           setContacts(storedContacts);
           const shouldRefetch = await shouldRefetchContacts();
           if (!shouldRefetch) {
@@ -63,6 +84,7 @@ export default function Contacts() {
       const data = await response.json();
 
       if (Array.isArray(data)) {
+        data.sort((a, b) => a.name.localeCompare(b.name));
         setContacts(data);
         await saveContacts(data);
       } else if (data.error) {
@@ -144,6 +166,21 @@ export default function Contacts() {
     });
   }, [contacts]);
 
+  useEffect(() => {
+    const sorted = [...filteredContacts].sort((a, b) => {
+      if (sortOptions.field === 'batch') {
+        const aBatch = parseInt(a.batch || '0') || 0;
+        const bBatch = parseInt(b.batch || '0') || 0;
+        return sortOptions.ascending ? aBatch - bBatch : bBatch - aBatch;
+      }
+      const aValue = String(a[sortOptions.field] || '');
+      const bValue = String(b[sortOptions.field] || '');
+      const comparison = aValue.localeCompare(bValue);
+      return sortOptions.ascending ? comparison : -comparison;
+    });
+    setFilteredContacts(sorted);
+  }, [sortOptions]);
+
   const handleSocialLink = (url: string) => {
     if (url) Linking.openURL(url);
   };
@@ -202,16 +239,28 @@ export default function Contacts() {
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <ContactSearch
-        searchQuery={filterOptions.search}
-        onSearchChange={(search) => setFilterOptions(prev => ({ ...prev, search }))}
-        onClear={() => setFilterOptions(prev => ({ ...prev, search: '' }))}
-      />
-      <ContactFilter
-        options={filterOptions}
-        onOptionsChange={setFilterOptions}
-        availableOptions={availableFilterOptions}
-      />
+      <View className="px-4 py-2 gap-2 border-b border-gray-800">
+        <View className="flex-row items-center gap-2">
+          <View className="flex-1">
+            <ContactSearch
+              searchQuery={filterOptions.search}
+              onSearchChange={(search) => setFilterOptions(prev => ({ ...prev, search }))}
+              onClear={() => setFilterOptions(prev => ({ ...prev, search: '' }))}
+            />
+          </View>
+          <ContactSort 
+            options={sortOptions} 
+            onOptionsChange={setSortOptions} 
+          />
+          <ContactFilter
+            options={filterOptions}
+            onOptionsChange={setFilterOptions}
+            availableOptions={availableFilterOptions}
+          />
+          <ViewToggle isGrid={isGridView} onToggle={toggleView} />
+        </View>
+      </View>
+
       <ScrollView 
         className="flex-1"
         refreshControl={
@@ -222,12 +271,13 @@ export default function Contacts() {
           />
         }
       >
-        <View className="p-4">
+        <View className={`p-2 ${isGridView ? 'flex-row flex-wrap justify-between' : ''}`}>
           {filteredContacts.map((contact) => (
             <ContactCard
               key={contact.email}
               contact={contact}
-              isCompact={true}
+              isCompact={!isGridView}
+              isGrid={isGridView}
             />
           ))}
         </View>
