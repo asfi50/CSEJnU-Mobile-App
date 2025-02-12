@@ -37,7 +37,7 @@ export default function Index() {
 
   const fetchDashboardData = async () => {
     try {
-      if (checkTokenExpiration()) {
+      if (await checkTokenExpiration()) {
         router.replace('/login');
         return;
       }

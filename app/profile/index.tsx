@@ -37,7 +37,7 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      if (checkTokenExpiration()) {
+      if (await checkTokenExpiration()) {
         router.replace('/login');
         return;
       }

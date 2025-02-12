@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     checkLoginStatus();
-  }, []);
+  }, [token]);
 
   const checkLoginStatus = async () => {
     try {
@@ -149,7 +149,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const checkTokenExpiration = () => {
-    if (token && isTokenExpired(token)) {
+    if (!token || (token && isTokenExpired(token))) {
       logout();
       Toast.show({
         type: 'info',
