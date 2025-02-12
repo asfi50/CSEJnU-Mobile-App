@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({ title, showBack = false }: HeaderProps) {
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   return (
@@ -34,29 +34,16 @@ export default function Header({ title, showBack = false }: HeaderProps) {
         {title}
       </Text>
       
-      <View className="flex-row items-center ml-auto">
-        <TouchableOpacity
-          onPress={toggleTheme}
-          className={`p-2 rounded-full ml-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
-        >
-          <Ionicons 
-            name={isDarkMode ? "sunny" : "moon"} 
-            size={20} 
-            color={isDarkMode ? "#fff" : "#1a1a1a"}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => router.push('/profile')}
-          className={`p-2 rounded-full ml-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
-        >
-          <Ionicons 
-            name="person-circle-outline" 
-            size={20} 
-            color={isDarkMode ? "#fff" : "#1a1a1a"}
-          />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        onPress={() => router.push('/settings')}
+        className={`p-2 rounded-full ml-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
+      >
+        <Ionicons 
+          name="settings-outline" 
+          size={20} 
+          color={isDarkMode ? "#fff" : "#1a1a1a"}
+        />
+      </TouchableOpacity>
     </View>
   );
 }

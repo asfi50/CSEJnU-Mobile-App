@@ -49,6 +49,14 @@ function LayoutContent() {
         <Stack.Screen name="post" />
         <Stack.Screen name="profile" />
         <Stack.Screen name="contact" />
+        <Stack.Screen 
+          name="settings" 
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom'
+          }}
+        />
+        <Stack.Screen name="about" />
       </Stack>
       <Toast />
     </>

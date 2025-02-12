@@ -18,24 +18,6 @@ export default function ProfileLayout() {
         headerTintColor: isDarkMode ? '#ffffff' : '#000000',
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{
-          title: 'Profile',
-        }}
-      />
-      <Stack.Screen
-        name="edit"
-        options={{
-          title: 'Edit Profile',
-        }}
-      />
-      <Stack.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-        }}
-      />
     </Stack>
   );
 }
