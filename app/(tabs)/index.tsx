@@ -215,6 +215,12 @@ export default function Index() {
           icon="people"
           route="/contacts"
         />
+          <NavigationCard 
+          title="Birthdays" 
+          description={`Birthdays`}
+          icon="people"
+          route="/birthdays"
+        />
       </View>
     </ScrollView>
   );

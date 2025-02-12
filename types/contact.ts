@@ -37,7 +37,7 @@ export interface ContactFilterOptions {
 }
 
 // Update SortOption type to be more specific
-export type SortOption = 'name' | 'email' | 'batch';
+export type SortOption = 'name' | 'email' | 'batch' | 'birthday';
 
 export interface ContactSortOptions {
   field: SortOption;

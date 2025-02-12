@@ -49,6 +49,7 @@ function LayoutContent() {
         <Stack.Screen name="post" />
         <Stack.Screen name="profile" />
         <Stack.Screen name="contact" />
+        <Stack.Screen name="birthdays" />
         <Stack.Screen 
           name="settings" 
           options={{
