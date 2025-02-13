@@ -24,8 +24,8 @@ export default function VideoCard({ video, compact }: VideoCardProps) {
 
   return (
     <TouchableOpacity
-      className={`${compact ? '' : 'mb-4'} rounded-xl overflow-hidden ${
-        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      className={`${compact ? 'mb-2' : 'mb-4'} rounded-xl overflow-hidden ${
+        isDarkMode ? 'bg-gray-800/90' : 'bg-white'
       } shadow-sm`}
       onPress={() => Linking.openURL(`https://youtube.com/watch?v=${video.video_id}`)}
     >

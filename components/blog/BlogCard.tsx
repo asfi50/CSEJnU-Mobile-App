@@ -25,9 +25,9 @@ export default function BlogCard({ post }: BlogCardProps) {
 
   return (
     <TouchableOpacity
-      className={`mb-6 rounded-xl overflow-hidden ${
-        isDarkMode ? 'bg-gray-800' : 'bg-white'
-      } shadow-lg`}
+      className={`mb-4 rounded-xl overflow-hidden ${
+        isDarkMode ? 'bg-gray-800/90' : 'bg-white'
+      } shadow-sm`}
       onPress={() => router.push(`/post/${post.id}`)}
     >
       <Image

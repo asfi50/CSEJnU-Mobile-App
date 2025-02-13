@@ -1,10 +1,12 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Linking, RefreshControl } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, RefreshControl } from "react-native";
+import Reanimated, { FadeIn } from 'react-native-reanimated';
 import { useTheme } from "@/context/ThemeContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { wp_url } from "@/config";
 import { decode } from 'html-entities';
 import BlogCard from "@/components/blog/BlogCard";
 import BlogFilter from "@/components/blog/BlogFilter";
+import debounce from 'lodash/debounce';
 
 interface WPPost {
   id: number;
@@ -20,6 +22,8 @@ interface WPPost {
     avatar_urls: { [key: string]: string };
   };
 }
+
+const ReanimatedView = Reanimated.createAnimatedComponent(View);
 
 export default function Blog() {
   interface FilterOptions {
@@ -53,6 +57,7 @@ export default function Blog() {
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [authors, setAuthors] = useState([]);
+  const [isLoadingMoreDebounced, setIsLoadingMoreDebounced] = useState(false);
 
   useEffect(() => {
     fetchPosts(page);
@@ -140,22 +145,42 @@ export default function Blog() {
     }
   };
 
+  const debouncedLoadMore = useCallback(
+    debounce(async () => {
+      if (loadingMore || !hasMore || isLoadingMoreDebounced) return;
+
+      try {
+        setIsLoadingMoreDebounced(true);
+        setLoadingMore(true);
+        const nextPage = page + 1;
+        await fetchPosts(nextPage);
+        setPage(nextPage);
+      } catch (err) {
+        console.error('Load more error:', err);
+      } finally {
+        setLoadingMore(false);
+        setIsLoadingMoreDebounced(false);
+      }
+    }, 1000),
+    [loadingMore, hasMore, page, isLoadingMoreDebounced]
+  );
+
+  // Clean up debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedLoadMore.cancel();
+    };
+  }, []);
+
   const loadMore = () => {
-    if (!loadingMore && hasMore) {
-      console.log('Loading more...', page + 1); // Debug log
-      setPage(prev => {
-        const nextPage = prev + 1;
-        fetchPosts(nextPage);
-        return nextPage;
-      });
+    if (!loadingMore && hasMore && !isLoadingMoreDebounced) {
+      debouncedLoadMore();
     }
   };
 
   const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: any) => {
-    // Assuming each post is roughly 300px tall (48px image + text + padding)
-    const loadThreshold = 300 * 3; // Load when 3 posts from bottom
-    return layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - loadThreshold;
+    const paddingToBottom = 300; // Load when 300px from bottom
+    return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
   };
 
   const onRefresh = async () => {
@@ -179,6 +204,43 @@ export default function Blog() {
     );
     setFilteredPosts(filtered);
   }, [searchQuery, posts]);
+
+  const renderItem = ({ item: post, index }: { item: WPPost, index: number }) => (
+    <ReanimatedView
+      entering={FadeIn.delay(index * 100).springify()}
+      className="mb-4"
+    >
+      <BlogCard post={post} />
+    </ReanimatedView>
+  );
+
+  const ListEmptyComponent = () => (
+    <View className="py-8 items-center">
+      <Text className={`text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        No posts available
+      </Text>
+    </View>
+  );
+
+  const ListFooterComponent = () => (
+    <View className="py-4">
+      {loadingMore && (
+        <View className="py-2 my-2">
+          <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
+          <Text className={`text-center text-sm mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Loading more posts...
+          </Text>
+        </View>
+      )}
+      {!hasMore && posts.length > 0 && (
+        <View className="py-8 items-center border-t border-gray-700/20">
+          <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            — You've reached the end —
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 
   if (loading) {
     return (
@@ -220,19 +282,17 @@ export default function Blog() {
         tags={tags}
         authors={authors}
       />
-      <ScrollView 
-        className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-        onScroll={({nativeEvent}) => {
-          if (isCloseToBottom(nativeEvent)) {
-            loadMore();
-          }
-        }}
-        scrollEventThrottle={400}
-        onScrollEndDrag={({nativeEvent}) => {
-          if (isCloseToBottom(nativeEvent)) {
-            loadMore();
-          }
-        }}
+      <FlatList
+        data={searchQuery ? filteredPosts : posts}
+        renderItem={renderItem}
+        keyExtractor={post => post.id.toString()}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
+        ListEmptyComponent={ListEmptyComponent}
+        ListFooterComponent={ListFooterComponent}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        initialNumToRender={7}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -241,30 +301,9 @@ export default function Blog() {
             colors={[isDarkMode ? '#fff' : '#000']}
           />
         }
-      >
-        <View className="p-4">
-          {(searchQuery ? filteredPosts : posts).map((post) => (
-            <BlogCard key={post.id} post={post} />
-          ))}
-          
-          {loadingMore && (
-            <View className="py-4">
-              <ActivityIndicator size="small" color={isDarkMode ? '#fff' : '#000'} />
-            </View>
-          )}
-
-          {!hasMore && posts.length > 0 && (
-            <View className="py-8 items-center border-t border-gray-700/20">
-              <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                — You've reached the end —
-              </Text>
-              <Text className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                No more posts to load
-              </Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
+        contentContainerStyle={{ padding: 16 }}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
