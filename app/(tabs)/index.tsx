@@ -8,6 +8,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import VideoCarousel from "@/components/video/VideoCarousel";
 import BlogCarousel from "@/components/blog/BlogCarousel";
+import { wordpressService } from '@/services/wordpress.service';
+import { youtubeService } from '@/services/youtube.service';
+import { contactService } from '@/services/contact.service';
 
 interface DashboardData {
   stats: {
@@ -61,16 +64,15 @@ export default function Index() {
       }
 
       setLoading(true);
-      const token = await AsyncStorage.getItem('token');
       
       // Fetch all data in parallel
       const [blogData, youtubeData, contactData] = await Promise.all([
-        fetch(`${wp_url}/wp-json/wp/v2/posts?per_page=1`).then(res => ({
-          count: parseInt(res.headers.get('X-WP-Total') || '0'),
-          recent: res.json()
+        wordpressService.getPostCount().then(count => ({
+          count,
+          recent: wordpressService.getPosts(5)
         })),
-        fetch(`${AUTH_URL}/api/youtube.php?token=${token}`).then(res => res.json()),
-        fetch(`${AUTH_URL}/api/contacts?token=${token}`).then(res => res.json())
+        youtubeService.getVideos(),
+        contactService.getContacts()
       ]);
 
       // Compile stats

@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { AUTH_URL } from "@/config";
+import { authService } from '@/services/auth.service';
 import { ProfileData } from "@/types/profile";
 import { formatBirthday } from "@/utils/dateUtils";
 
@@ -27,10 +27,7 @@ export default function Profile() {
         return;
       }
       
-      const response = await fetch(`${AUTH_URL}/verify?token=${token}`);
-      const data = await response.json();
-      // print the data to console
-      console.log(data);
+      const data = await authService.verifyToken(token!);
       if (data.valid) {
         setProfile(data.payload);
       }

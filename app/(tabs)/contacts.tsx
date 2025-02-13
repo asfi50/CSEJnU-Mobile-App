@@ -14,6 +14,7 @@ import { getUniqueBatches, getUniqueGenders, getUniqueBloodTypes } from "@/utils
 import ViewToggle from '@/components/contact/ViewToggle';
 import ContactSort from "@/components/contact/ContactSort";
 import { ContactSortOptions } from "@/types/contact";
+import { contactService } from '@/services/contact.service';
 
 export default function Contacts() {
   const { isDarkMode } = useTheme();
@@ -76,12 +77,8 @@ export default function Contacts() {
         }
       }
 
-      const token = await AsyncStorage.getItem('token');
-      if (!token) throw new Error('No auth token found');
-
       setAttemptedServerFetch(true);
-      const response = await fetch(`${AUTH_URL}/api/contacts?token=${token}`);
-      const data = await response.json();
+      const data:any = await contactService.getContacts();
 
       if (Array.isArray(data)) {
         data.sort((a, b) => a.name.localeCompare(b.name));
@@ -89,8 +86,6 @@ export default function Contacts() {
         await saveContacts(data);
       } else if (data.error) {
         throw new Error(data.error);
-      } else {
-        throw new Error(`Invalid response format: ${JSON.stringify(data).slice(0, 100)}`);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';

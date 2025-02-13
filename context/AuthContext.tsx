@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { AUTH_URL } from "@/config";
 import { isTokenExpired } from '@/utils/jwt';
+import { authService } from '@/services/auth.service';
 
 interface AuthContextProps {
   isLoggedIn: boolean;
@@ -72,15 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (username: string, password: string, rememberMe: boolean) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${AUTH_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password, remember_me: rememberMe }),
-      });
-
-      const data = await response.json();
+      const data = await authService.login(username, password, rememberMe);
 
       if (data.success && data.token) {
         setToken(data.token);
@@ -89,7 +82,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(data.user);
         setIsLoggedIn(true);
         
-        // Show toasts sequentially
         Toast.show({
           type: 'success',
           text1: 'Login Successful',
@@ -97,17 +89,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           position: 'top',
           visibilityTime: 2000,
         });
-        
-        // Show token toast after a slight delay
-        // setTimeout(() => {
-        //   Toast.show({
-        //     type: 'info',
-        //     text1: 'JWT Token (Dev Only)',
-        //     text2: data.token.slice(0, 20) + '...',
-        //     position: 'bottom',
-        //     visibilityTime: 4000,
-        //   });
-        // }, 2500);
         
         return true;
       }

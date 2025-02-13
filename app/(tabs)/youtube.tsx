@@ -7,25 +7,9 @@ import {
 } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { useEffect, useState, useCallback } from "react";
-import { AUTH_URL } from "@/config";
 import VideoCard from "@/components/video/VideoCard";
+import { youtubeService, Video } from "@/services/youtube.service";
 import { useAuth } from "@/context/AuthContext";
-
-interface Video {
-  video_id: string;
-  title: string;
-  description: string;
-  thumbnail: string;
-  published_at: string;
-}
-
-interface APIResponse {
-  videos: Video[];
-  pagination: {
-    next_page_token?: string;
-    prev_page_token?: string;
-  };
-}
 
 export default function YouTube() {
   const { isDarkMode } = useTheme();
@@ -38,10 +22,6 @@ export default function YouTube() {
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    fetchVideos();
-  }, []);
-
   const fetchVideos = async (pageToken?: string) => {
     try {
       if (!token) {
@@ -51,26 +31,13 @@ export default function YouTube() {
       if (!pageToken) setLoading(true);
       else setLoadingMore(true);
 
-      const url = `${AUTH_URL}/api/youtube.php?token=${token}${
-        pageToken ? "&pageToken=" + pageToken : ""
-      }`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch videos");
-      }
-
-      const data: APIResponse = await response.json();
-
-      if (!data.videos?.length) {
-        throw new Error("No videos found");
-      }
+      const response = await youtubeService.getVideos(pageToken);
 
       setVideos((prev) =>
-        pageToken ? [...prev, ...data.videos] : data.videos
+        pageToken ? [...prev, ...response.videos] : response.videos
       );
-      setNextPageToken(data.pagination.next_page_token || null);
-      setHasMore(!!data.pagination.next_page_token);
+      setNextPageToken(response.pagination.next_page_token || null);
+      setHasMore(!!response.pagination.next_page_token);
     } catch (err) {
       console.error("Failed to fetch videos:", err);
       setError(err instanceof Error ? err.message : "Failed to load videos");
@@ -79,6 +46,10 @@ export default function YouTube() {
       setLoadingMore(false);
     }
   };
+
+  useEffect(() => {
+    fetchVideos();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
