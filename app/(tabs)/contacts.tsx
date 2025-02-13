@@ -234,7 +234,7 @@ export default function Contacts() {
 
   return (
     <View className={`flex-1 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <View className="px-4 py-2 gap-2 border-b border-gray-800">
+      <View className="px-4 py-2 gap-2 ">
         <View className="flex-row items-center gap-2">
           <View className="flex-1">
             <ContactSearch

@@ -8,7 +8,7 @@ export default function ProfileLayout() {
   return (
     <Stack
       screenOptions={{
-        header: (props) => <Header title={props.route.name} />,
+        header: () => <Header title="Profile" />,
         contentStyle: {
           backgroundColor: isDarkMode ? '#111827' : '#f9fafb',
         },

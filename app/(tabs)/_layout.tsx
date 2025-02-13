@@ -6,10 +6,20 @@ import { Ionicons } from '@expo/vector-icons';
 export default function TabsLayout() {
   const { isDarkMode } = useTheme();
 
+  const getScreenTitle = (routeName: string) => {
+    const titles: { [key: string]: string } = {
+      index: 'Home',
+      contacts: 'Contacts',
+      blog: 'Blog',
+      youtube: 'YouTube'
+    };
+    return titles[routeName] || routeName;
+  };
+
   return (
     <Tabs
       screenOptions={{
-        header: (props) => <Header title={props.route.name} />,
+        header: (props) => <Header title={getScreenTitle(props.route.name)} />,
         tabBarStyle: {
           backgroundColor: isDarkMode ? '#111827' : '#ffffff',
           borderTopWidth: 0,
