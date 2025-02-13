@@ -6,8 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { AUTH_URL, wp_url } from "@/config";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
-import VideoCarousel from "@/components/VideoCarousel";
-import BlogCarousel from "@/components/BlogCarousel";
+import VideoCarousel from "@/components/video/VideoCarousel";
+import BlogCarousel from "@/components/blog/BlogCarousel";
 
 interface DashboardData {
   stats: {

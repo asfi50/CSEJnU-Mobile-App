@@ -1,6 +1,6 @@
-import { ScrollView, View, Text } from 'react-native';
+import { ScrollView, View, Text } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
-import VideoCard from './VideoCard';
+import VideoCard from "@/components/video/VideoCard";
 
 interface Video {
   video_id: string;
@@ -21,11 +21,15 @@ export default function VideoCarousel({ videos }: VideoCarouselProps) {
 
   return (
     <View className="mb-6">
-      <Text className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+      <Text
+        className={`text-lg font-semibold mb-3 ${
+          isDarkMode ? "text-white" : "text-gray-900"
+        }`}
+      >
         Recent Videos
       </Text>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         className="flex-row"
       >

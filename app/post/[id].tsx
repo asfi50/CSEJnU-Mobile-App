@@ -4,10 +4,10 @@ import { useTheme } from '@/context/ThemeContext';
 import { useState, useEffect } from 'react';
 import { wp_url } from '@/config';
 import { decode } from 'html-entities';
-import ProgressiveImage from '@/components/ProgressiveImage';
+import ProgressiveImage from '@/components/blog/ProgressiveImage';
 import { WebView } from 'react-native-webview';
-import LightboxImage from '@/components/LightboxImage';
-import Comments from '@/components/Comments';
+import LightboxImage from '@/components/blog/LightboxImage';
+import Comments from '@/components/blog/Comments';
 import { Ionicons } from '@expo/vector-icons';
 
 interface WPPost {

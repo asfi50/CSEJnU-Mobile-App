@@ -3,8 +3,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { useEffect, useState } from "react";
 import { wp_url } from "@/config";
 import { decode } from 'html-entities';
-import BlogCard from "@/components/BlogCard";
-import BlogFilter from "@/components/BlogFilter";
+import BlogCard from "@/components/blog/BlogCard";
+import BlogFilter from "@/components/blog/BlogFilter";
 
 interface WPPost {
   id: number;
