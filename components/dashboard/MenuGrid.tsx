@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, Pressable, Linking } from 'react-native';
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -15,8 +15,8 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { id: '1', title: 'Questions', icon: 'help-circle', route: '/questions', color: '#FF6B6B' },
-  { id: '2', title: 'Website', icon: 'globe', route: '/website', color: '#4ECDC4' },
-  { id: '3', title: 'Facebook', icon: 'logo-facebook', route: '/facebook', color: '#1877F2' },
+  { id: '2', title: 'Website', icon: 'globe', route: 'https://yourwebsite.com', color: '#4ECDC4' },
+  { id: '3', title: 'Facebook', icon: 'logo-facebook', route: 'https://facebook.com/yourpage', color: '#1877F2' },
   { id: '4', title: 'Birthdays', icon: 'gift', route: '/birthdays', color: '#FFD93D' },
   { id: '5', title: 'Blood Groups', icon: 'water', route: '/blood-groups', color: '#FF6B6B' },
   { id: '6', title: 'Gallery', icon: 'images', route: '/gallery', color: '#6C5CE7' },
@@ -24,11 +24,6 @@ const menuItems: MenuItem[] = [
   { id: '8', title: 'Members', icon: 'people', route: '/members', color: '#FF8B94' },
   { id: '9', title: 'Resources', icon: 'folder', route: '/resources', color: '#B83B5E' },
   { id: '10', title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
-  { id: '11', title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
-  { id: '12', title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
-  { id: '13', title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
-  { id: '14', title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
-  { id: '15', title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
 ];
 
 export const MenuGrid = () => {
@@ -41,7 +36,13 @@ export const MenuGrid = () => {
   
   const MenuItem = ({ item, isPartial = false }: { item: MenuItem, isPartial?: boolean }) => (
     <TouchableOpacity
-      onPress={() => router.push(item.route as any)}
+      onPress={() => {
+        if (item.route.startsWith('http')) {
+          Linking.openURL(item.route);
+        } else {
+          router.push(item.route as any);
+        }
+      }}
       className="items-center justify-center w-1/4 p-2"
       style={{ opacity: isPartial ? 0.3 : 1 }}
     >
