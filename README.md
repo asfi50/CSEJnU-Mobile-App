@@ -65,7 +65,7 @@ A comprehensive mobile application for the CSE Department of Jagannath Universit
 
 1. Clone the repository
 ```bash
-git clone [repository-url]
+git clone https://github.com/asfi50/CSEJnU-Mobile-App.git
 cd CSEJnU
 ```
 

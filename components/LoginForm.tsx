@@ -1,6 +1,6 @@
 import { View, Text, TextInput, TouchableOpacity, Switch, Linking, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
-import { useAuth, TEST_CREDENTIALS } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { wp_url } from '@/config';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,8 +10,8 @@ export default function LoginForm() {
   const { isDarkMode } = useTheme();
   const router = useRouter();
   const { login, isLoading } = useAuth();
-  const [username, setUsername] = useState(TEST_CREDENTIALS.username);
-  const [password, setPassword] = useState(TEST_CREDENTIALS.password);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -52,12 +52,6 @@ export default function LoginForm() {
     `}>
       <Text className={`text-2xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
         Welcome Back
-      </Text>
-
-      <Text className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>
-        Test Account:{'\n'}
-        Username: {TEST_CREDENTIALS.username}{'\n'}
-        Password: {TEST_CREDENTIALS.password}
       </Text>
 
       <View className="mb-4">

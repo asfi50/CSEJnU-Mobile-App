@@ -159,9 +159,3 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
-// Test credentials for development
-export const TEST_CREDENTIALS = {
-  username: 'testuser',
-  password: '123456',
-};

@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
+import { wp_url } from '@/config';
+import * as WebBrowser from 'expo-web-browser';
 
 interface HeaderProps {
   title?: string;
@@ -12,6 +14,7 @@ interface HeaderProps {
 export default function Header({ title, showBack = false }: HeaderProps) {
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <View className={`flex-row items-center px-4 pt-12 pb-3 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -34,9 +37,39 @@ export default function Header({ title, showBack = false }: HeaderProps) {
         {title}
       </Text>
       
+      {pathname === '/blog' && (
+        <TouchableOpacity
+          onPress={() => WebBrowser.openBrowserAsync(`${wp_url}/post-new`)}
+          className={`flex-row items-center px-3 py-2 rounded-lg mr-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
+        >
+          <Ionicons 
+            name="create-outline" 
+            size={20} 
+            color={isDarkMode ? "#fff" : "#1a1a1a"}
+          />
+          <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            Write Post
+          </Text>
+        </TouchableOpacity>
+      )}
+      {pathname === '/youtube' && (
+        <TouchableOpacity
+          onPress={() => WebBrowser.openBrowserAsync(`${wp_url}/youtube-registration`)}
+          className={`flex-row items-center px-3 py-2 rounded-lg mr-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
+        >
+          <Ionicons 
+            name="videocam-outline" 
+            size={20} 
+            color={isDarkMode ? "#fff" : "#1a1a1a"}
+          />
+          <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            Upload Video
+          </Text>
+        </TouchableOpacity>
+      )}
       <TouchableOpacity
         onPress={() => router.push('/settings')}
-        className={`p-2 rounded-full ml-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
+        className={`p-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
       >
         <Ionicons 
           name="settings-outline" 
