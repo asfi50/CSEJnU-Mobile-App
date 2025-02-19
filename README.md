@@ -1,50 +1,134 @@
-# Welcome to your Expo app 👋
+# CSEJnU Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
-## Get started
+A comprehensive mobile application for the CSE Department of Jagannath University, built with React Native and Expo. This app serves as a central platform for students and faculty to stay connected and access department resources.
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+### 👥 Contact Management
+- Complete directory of students and faculty
+- Advanced filtering and search capabilities
+- Detailed profiles with academic and contact information
+- Quick access to social media profiles
+- Grid and list view options
 
-2. Start the app
+### 📝 Blog System
+- Access to department news and announcements
+- Category-based article filtering
+- Interactive comments system
+- Rich media support
+- Responsive article layouts
 
-   ```bash
-    npx expo start
-   ```
+### 🎥 YouTube Integration
+- Stream department-related videos
+- Carousel of recent uploads
+- Video categorization
+- Seamless video playback
 
-In the output, you'll find options to open the app in a
+### 🎨 Additional Features
+- Dark/Light theme support
+- Birthday notifications
+- User authentication
+- Profile management
+- Responsive design
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+├── app/                    # Main application code
+│   ├── (tabs)/            # Tab-based navigation
+│   ├── contact/           # Contact-related screens
+│   ├── post/              # Blog post screens
+│   └── profile/           # User profile screens
+├── assets/                # Static assets
+├── components/            # Reusable components
+├── context/               # React Context providers
+├── services/              # API and service integrations
+├── types/                 # TypeScript type definitions
+└── utils/                 # Utility functions
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Getting Started
 
-## Learn more
+### Prerequisites
+- Node.js (v18 or higher)
+- npm (v9 or higher) or yarn
+- Expo CLI (optional, but recommended)
+  ```bash
+  npm install -g expo-cli
+  ```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Installation
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Clone the repository
+```bash
+git clone [repository-url]
+cd CSEJnU
+```
 
-## Join the community
+2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
 
-Join our community of developers creating universal apps.
+3. Start the development server
+```bash
+npx expo start
+# or
+yarn expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+4. Build for production (using EAS)
+```bash
+# Install EAS CLI
+npm install -g eas-cli
+
+# Login to your Expo account
+eas login
+
+# Configure your project
+eas build:configure
+
+# Build for Android
+eas build --platform android
+
+# Build for iOS
+eas build --platform ios
+```
+
+## Tech Stack
+
+- React Native
+- Expo
+- TailwindCSS (NativeWind)
+- WordPress REST API
+- YouTube API
+- AsyncStorage
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to submit pull requests, report issues, and contribute to the project.
+
+## Security
+
+For details about our security policy and how to report security vulnerabilities, please see our [Security Policy](SECURITY.md).
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+If you need help or have questions, please:
+- Open an issue
+- Check our [Contributing Guide](CONTRIBUTING.md)
+- Join our community discussions
