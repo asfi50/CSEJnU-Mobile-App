@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
-import { wp_url } from '@/config';
+import { wp_url, github_repo } from '@/config';
 import * as WebBrowser from 'expo-web-browser';
 
 interface HeaderProps {
@@ -64,6 +64,21 @@ export default function Header({ title, showBack = false }: HeaderProps) {
           />
           <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
             Upload Video
+          </Text>
+        </TouchableOpacity>
+      )}
+      {pathname === '/about' && (
+        <TouchableOpacity
+          onPress={() => WebBrowser.openBrowserAsync(`https://github.com/${github_repo}`)}
+          className={`flex-row items-center px-3 py-2 rounded-lg mr-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
+        >
+          <Ionicons 
+            name="logo-github" 
+            size={20} 
+            color={isDarkMode ? "#fff" : "#1a1a1a"}
+          />
+          <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            View Code
           </Text>
         </TouchableOpacity>
       )}

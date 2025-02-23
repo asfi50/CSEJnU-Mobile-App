@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Clipboard } from 'react-native';
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from 'expo-router';
 
@@ -23,12 +23,18 @@ export default function BlogCard({ post }: BlogCardProps) {
   const { isDarkMode } = useTheme();
   const router = useRouter();
 
+  const handleLongPress = async () => {
+    await Clipboard.setString(post.link);
+  };
+
   return (
     <TouchableOpacity
       className={`mb-4 rounded-xl overflow-hidden ${
         isDarkMode ? 'bg-gray-800/90' : 'bg-white'
       } shadow-sm`}
       onPress={() => router.push(`/post/${post.id}`)}
+      onLongPress={handleLongPress}
+      delayLongPress={500}
     >
       <Image
         source={{ 
