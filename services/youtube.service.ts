@@ -18,7 +18,18 @@ export interface YouTubeResponse {
 
 export const youtubeService = {
   async getVideos(pageToken?: string): Promise<YouTubeResponse> {
+    console.log(`fetching videos with pageToken: ${pageToken}`);
     const endpoint = `/api/youtube.php${pageToken ? `?pageToken=${pageToken}` : ''}`;
-    return await api.get(endpoint);
+    // return await api.get(endpoint);
+    const response = await api.get(endpoint);
+    console.log(`youtube response length ${response.length}`);
+    return response;
+    
+    // return blankResponse;
+    // const blankResponse: YouTubeResponse = {
+    //   videos: [],
+    //   pagination: {},
+    // };
+    // return blankResponse;
   },
 };

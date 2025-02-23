@@ -20,7 +20,9 @@ const formatPost = (post: any): WPPost => ({
 
 export const wordpressService = {
   async getPosts(perPage = 10, page = 1) {
+    console.log(`fetching posts page ${page}, perPage ${perPage}`);
     const response = await api.wpGet(`/posts?per_page=${perPage}&page=${page}&_embed&orderby=date&order=desc`);
+    console.log('post response count', response.length);
     return response.map(formatPost);
   },
 
