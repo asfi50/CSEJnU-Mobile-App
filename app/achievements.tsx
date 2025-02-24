@@ -19,6 +19,7 @@ import { wordpressService } from "@/services/wordpress.service";
 import { WPPost } from "@/types/blog";
 import { achievement_category_id } from "@/config";
 import AchievementFilter from "@/components/achievements/AchievementFilter";
+import debounce from "lodash/debounce";
 
 const ReanimatedView = Reanimated.createAnimatedComponent(View);
 const AnimatedGradient = Reanimated.createAnimatedComponent(LinearGradient);
@@ -33,6 +34,7 @@ export default function Achievements() {
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoadingMoreDebounced, setIsLoadingMoreDebounced] = useState(false);
 
   const fetchPosts = useCallback(async (pageNum: number, refresh = false) => {
     try {
@@ -62,15 +64,37 @@ export default function Achievements() {
     fetchPosts(1, true);
   }, [fetchPosts]);
 
-  const handleLoadMore = useCallback(() => {
-    if (!loadingMore && hasMore && !loading) {
-      setPage((prev) => {
-        const nextPage = prev + 1;
-        fetchPosts(nextPage, false);
-        return nextPage;
-      });
+  const debouncedLoadMore = useCallback(
+    debounce(async () => {
+      if (loadingMore || !hasMore || isLoadingMoreDebounced) return;
+
+      try {
+        setIsLoadingMoreDebounced(true);
+        setLoadingMore(true);
+        const nextPage = page + 1;
+        await fetchPosts(nextPage, false);
+        setPage(nextPage);
+      } catch (err) {
+        console.error("Load more error:", err);
+      } finally {
+        setLoadingMore(false);
+        setIsLoadingMoreDebounced(false);
+      }
+    }, 500),
+    [loadingMore, hasMore, page, isLoadingMoreDebounced, fetchPosts]
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedLoadMore.cancel();
+    };
+  }, []);
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore && !isLoadingMoreDebounced) {
+      debouncedLoadMore();
     }
-  }, [loadingMore, hasMore, loading, fetchPosts]);
+  };
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -187,7 +211,18 @@ export default function Achievements() {
           </ReanimatedView>
         )}
         onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.2}
+        onMomentumScrollEnd={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const paddingToBottom = 20;
+          if (
+            layoutMeasurement.height + contentOffset.y >=
+            contentSize.height - paddingToBottom
+          ) {
+            handleLoadMore();
+          }
+        }}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
