@@ -26,27 +26,28 @@ const formatPost = (post: any): WPPost => ({
 });
 
 export const wordpressService = {
-  async getPosts(perPage = 10, page = 1) {
+  async getPosts(perPage = 10, page = 1, categoryId?: number) {
     try {
       // Fetch fresh data
-      console.log(`fetching posts page ${page}, perPage ${perPage}`);
+      console.log(`fetching posts page ${page}, perPage ${perPage}${categoryId ? `, category ${categoryId}` : ''}`);
+      const categoryParam = categoryId ? `&categories=${categoryId}` : '';
       const response = await api.wpGet(
-        `/posts?per_page=${perPage}&page=${page}&_embed&orderby=date&order=desc`
+        `/posts?per_page=${perPage}&page=${page}&_embed&orderby=date&order=desc${categoryParam}`
       );
       console.log("post response count", response.length);
 
       const formattedPosts = response.map(formatPost);
 
       // Cache first page results
-      if (page === 1) {
+      if (page === 1 && !categoryId) {
         await cachePosts(formattedPosts);
       }
 
       return formattedPosts;
     } catch (error) {
       console.error("Error fetching posts:", error);
-      // Fallback to cache if network request fails
-      if (page === 1) {
+      // Fallback to cache if network request fails and no category filter
+      if (page === 1 && !categoryId) {
         const cachedPosts = await getCachedPosts();
         if (cachedPosts.length > 0) {
           console.log("Falling back to cached posts");
@@ -57,14 +58,18 @@ export const wordpressService = {
     }
   },
 
-  async getPostCount() {
+  async getPostCount(categoryId?: number) {
     try {
-      const response = await fetch(`${wp_url}/wp-json/wp/v2/posts?per_page=1`);
+      const categoryParam = categoryId ? `&categories=${categoryId}` : '';
+      const response = await fetch(`${wp_url}/wp-json/wp/v2/posts?per_page=1${categoryParam}`);
       return parseInt(response.headers.get("X-WP-Total") || "0");
     } catch (error) {
       console.error("Error fetching post count:", error);
-      const cachedPosts = await getCachedPosts();
-      return cachedPosts.length;
+      if (!categoryId) {
+        const cachedPosts = await getCachedPosts();
+        return cachedPosts.length;
+      }
+      return 0;
     }
   },
 };

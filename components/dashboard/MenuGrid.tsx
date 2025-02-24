@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Pressable, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, Linking } from 'react-native';
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { wp_url } from '@/config';
 
 interface MenuItem {
-  id: string;
   title: string;
   icon: string;
   route: string;
@@ -15,16 +14,17 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: '1', title: 'Questions', icon: 'help-circle', route: '/questions', color: '#FF6B6B' },
-  { id: '2', title: 'Website', icon: 'globe', route: wp_url, color: '#4ECDC4' },
-  { id: '3', title: 'Facebook', icon: 'logo-facebook', route: 'https://www.facebook.com/groups/156209764450123', color: '#1877F2' },
-  { id: '4', title: 'Birthdays', icon: 'gift', route: '/birthdays', color: '#FFD93D' },
-  { id: '5', title: 'Blood Groups', icon: 'water', route: '/blood', color: '#FF6B6B' },
-  { id: '6', title: 'Gallery', icon: 'images', route: '/gallery', color: '#6C5CE7' },
-  { id: '7', title: 'Events', icon: 'calendar', route: '/events', color: '#A8E6CF' },
-  { id: '8', title: 'Members', icon: 'people', route: '/contacts', color: '#FF8B94' },
-  { id: '9', title: 'Resources', icon: 'folder', route: '/resources', color: '#B83B5E' },
-  { id: '10', title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
+  { title: 'Achievements', icon: 'trophy', route: '/achievements', color: '#FFA500' },
+  { title: 'Questions', icon: 'help-circle', route: '/questions', color: '#FF6B6B' },
+  { title: 'Website', icon: 'globe', route: wp_url, color: '#4ECDC4' },
+  { title: 'Facebook', icon: 'logo-facebook', route: 'https://www.facebook.com/groups/156209764450123', color: '#1877F2' },
+  { title: 'Birthdays', icon: 'gift', route: '/birthdays', color: '#FFD93D' },
+  { title: 'Blood Groups', icon: 'water', route: '/blood', color: '#FF6B6B' },
+  { title: 'Gallery', icon: 'images', route: '/gallery', color: '#6C5CE7' },
+  { title: 'Events', icon: 'calendar', route: '/events', color: '#A8E6CF' },
+  { title: 'Members', icon: 'people', route: '/contacts', color: '#FF8B94' },
+  { title: 'Resources', icon: 'folder', route: '/resources', color: '#B83B5E' },
+  { title: 'Settings', icon: 'settings', route: '/settings', color: '#6C5CE7' },
 ];
 
 export const MenuGrid = () => {
@@ -97,7 +97,7 @@ export const MenuGrid = () => {
 
       <View className="flex-row flex-wrap">
         {visibleItems.map((item) => (
-          <MenuItem key={item.id} item={item} />
+          <MenuItem key={item.title} item={item} />
         ))}
       </View>
 
@@ -105,7 +105,7 @@ export const MenuGrid = () => {
         <View className="relative">
           <View className="flex-row flex-wrap" style={{ height: 35 }}>
             {partialItems.map((item) => (
-              <MenuItem key={item.id} item={item} isPartial />
+              <MenuItem key={item.title} item={item} isPartial />
             ))}
           </View>
           <LinearGradient

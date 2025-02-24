@@ -52,6 +52,21 @@ export default function Header({ title, showBack = false }: HeaderProps) {
           </Text>
         </TouchableOpacity>
       )}
+      {pathname === '/achievements' && (
+        <TouchableOpacity
+          onPress={() => WebBrowser.openBrowserAsync(`${wp_url}/post-new`)}
+          className={`flex-row items-center px-3 py-2 rounded-lg mr-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
+        >
+          <Ionicons 
+            name="create-outline" 
+            size={20} 
+            color={isDarkMode ? "#fff" : "#1a1a1a"}
+          />
+          <Text className={`ml-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            New
+          </Text>
+        </TouchableOpacity>
+      )}
       {pathname === '/youtube' && (
         <TouchableOpacity
           onPress={() => WebBrowser.openBrowserAsync(`${wp_url}/youtube-registration`)}
